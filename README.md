@@ -14,4 +14,4 @@ To understand the bezier curves a bit better:
 - The black points are the initial and ending points of the 4 anchor point curve
 - The red points are the middle points, where the curve is interpolated (the curve does not intersect with these red points)  
 
-_It's like the black points are the "anchor points" of the Photoshop pen tool and the red points are those points where you can change the curvature of the line/curve you created._
+_It's like the black points are those "anchor points" of the Photoshop pen tool and the red points are those points where you can change the curvature of the line/curve you created with the anchor points._
