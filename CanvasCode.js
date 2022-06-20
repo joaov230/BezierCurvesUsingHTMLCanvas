@@ -11,7 +11,21 @@ var p;
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  drawBezier();
   for (i = 0; i < points.length; i++) {
+    ctx.strokeStyle = '#a64932';
+    ctx.beginPath();
+    ctx.moveTo(points[i].anchorPoint.x, points[i].anchorPoint.y);
+    ctx.lineTo(points[i].angleLeft.x, points[i].angleLeft.y);
+    ctx.stroke();
+    ctx.closePath();
+
+    ctx.beginPath();
+    ctx.moveTo(points[i].anchorPoint.x, points[i].anchorPoint.y);
+    ctx.lineTo(points[i].angleRight.x, points[i].angleRight.y);
+    ctx.stroke();
+    ctx.closePath();
+
     ctx.fillStyle = '#000000';
     ctx.beginPath();
     ctx.arc(points[i].anchorPoint.x, points[i].anchorPoint.y, points[i].anchorPoint.radius, 0, 2 * Math.PI);
@@ -26,12 +40,10 @@ function draw() {
     ctx.arc(points[i].angleRight.x, points[i].angleRight.y, points[i].angleRight.radius, 0, 2 * Math.PI);
     ctx.fill();
   }
-
-  drawBezier();
 }
 
 function drawBezier() {
-  ctx.fillStyle = '#b3198f';
+  ctx.strokeStyle = '#b3198f';
   if (points.length > 1) {
     for (i = 0; i < points.length-1; i++) {
       for (t = 0; t < 1; t+=0.01) {
@@ -89,8 +101,9 @@ function drawBezier() {
   }
 }
 
-pointErased = false;
-ctrlPressed = false;
+let pointErased = false;
+let ctrlPressed = false;
+
 
 function init() {
   window.addEventListener('keydown', function(e) {
@@ -121,7 +134,15 @@ function init() {
       if (colidiu) {
         p = {
           key: i,
-          value: colidiu
+          value: colidiu,
+          relativeAngleLeftPoint: colidiu == 'anchorPoint' ? {
+            x: (points[i].anchorPoint.x - points[i].angleLeft.x),
+            y: (points[i].anchorPoint.y - points[i].angleLeft.y),
+          } : null,
+          relativeAngleRightPoint: colidiu == 'anchorPoint' ? {
+            x: (points[i].anchorPoint.x - points[i].angleRight.x),
+            y: (points[i].anchorPoint.y - points[i].angleRight.y),
+          } : null
         }
         drag = true;
         return;
@@ -136,7 +157,22 @@ function init() {
 
   ctx.canvas.addEventListener("mousemove", function(e) {
     if (drag) {
-      points[p.key][p.value].movePoint(e.offsetX, e.offsetY);
+      if (p.value == 'anchorPoint') {
+        var leftRelative = {
+          x: points[p.key].anchorPoint.x + p.relativeAngleLeftPoint.x,
+          y: points[p.key].anchorPoint.y + p.relativeAngleLeftPoint.y
+        }
+        
+        var rightRelative = {
+          x: points[p.key].anchorPoint.x + p.relativeAngleRightPoint.x,
+          y: points[p.key].anchorPoint.y + p.relativeAngleRightPoint.y
+        }
+        points[p.key].anchorPoint.movePoint(e.offsetX, e.offsetY);
+        points[p.key].angleLeft.movePoint(leftRelative.x, leftRelative.y);
+        points[p.key].angleRight.movePoint(rightRelative.x, rightRelative.y);
+      } else {
+        points[p.key][p.value].movePoint(e.offsetX, e.offsetY);
+      }
     }
     draw();
   });
