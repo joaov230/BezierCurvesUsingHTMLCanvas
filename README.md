@@ -1,3 +1,5 @@
+# README NOT UPDATED YET SINCE LAST MODIFICATIONS
+
 # BezierCurvesUsingHTMLCanvas
  Manual implementation of Cubic Bezier Curves using HTML Canvas
 
