@@ -6,7 +6,99 @@ var canvasData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
 
 var points = [];
 var drag = false;
+var dragOnCreate = false;
 var p;
+
+
+
+// ------------------------ INIT ------------------------ //
+
+let pointErased = false;
+let ctrlPressed = false;
+
+function init() {
+  window.addEventListener('keydown', function(e) {
+    if (e.code == "ControlLeft") {
+      ctrlPressed = true;
+    }
+
+    if (e.code == "KeyZ" && ctrlPressed == true && pointErased == false) {
+      points.pop();
+      pointErased = true;
+    }
+    draw();
+  }, false);
+  window.addEventListener('keyup', function(e) {
+    if (e.code == "ControlLeft") {
+      ctrlPressed = false;
+    }
+
+    if (e.code == "KeyZ") {
+      pointErased = false;
+    }
+    draw();
+  }, false);
+
+  ctx.canvas.addEventListener("mousedown", function(e) {
+    for (i = 0; i < points.length; i++) {
+      colidiu = points[i].colides(e.offsetX, e.offsetY);
+      if (colidiu && ctrlPressed) {
+        p = {
+          key: i,
+          value: colidiu,
+          leftRelativeAngle: colidiu == 'anchorPoint' ? {
+            x: (points[i].angleLeft.x - points[i].anchorPoint.x),
+            y: (points[i].angleLeft.y - points[i].anchorPoint.y),
+          } : null,
+          rightRelativeAngle: colidiu == 'anchorPoint' ? {
+            x: (points[i].angleRight.x - points[i].anchorPoint.x),
+            y: (points[i].angleRight.y - points[i].anchorPoint.y),
+          } : null
+        }
+        drag = true;
+        return;
+      }
+    }
+
+    createNewAnchorPoint(e);
+    
+    console.log(points.length)
+    draw();
+  });
+
+  ctx.canvas.addEventListener("mousemove", function(e) {
+    if (drag) {
+      if (p.value == 'anchorPoint') {
+        points[p.key].anchorPoint.movePoint(e.offsetX, e.offsetY);
+        var leftRelative = {
+          x: points[p.key].anchorPoint.x + p.leftRelativeAngle.x,
+          y: points[p.key].anchorPoint.y + p.leftRelativeAngle.y
+        }
+        points[p.key].angleLeft.movePoint(leftRelative.x, leftRelative.y);
+        
+        var rightRelative = {
+          x: points[p.key].anchorPoint.x + p.rightRelativeAngle.x,
+          y: points[p.key].anchorPoint.y + p.rightRelativeAngle.y
+        }
+        points[p.key].angleRight.movePoint(rightRelative.x, rightRelative.y);
+      } else {
+        points[p.key][p.value].movePoint(e.offsetX, e.offsetY);
+      }
+    } else if (dragOnCreate) {
+      points[(points.length-1)].moveAngle(movedAngleName, e.offsetX, e.offsetY);
+    }
+    draw();
+  });
+
+  ctx.canvas.addEventListener("mouseup", function(e) {
+    drag = false;
+    dragOnCreate = false;
+    draw();
+  });
+}
+
+
+// ------------------------ DRAW FUNCTIONS ------------------------ //
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -101,86 +193,25 @@ function drawBezier() {
   }
 }
 
-let pointErased = false;
-let ctrlPressed = false;
+// ------------------------ UTILS ------------------------ //
 
+let movedAngleName;
 
-function init() {
-  window.addEventListener('keydown', function(e) {
-    if (e.code == "ControlLeft") {
-      ctrlPressed = true;
+function createNewAnchorPoint(e) {
+  // Ao criar o novo ponto, verifica se os anglePoints devem ser invertido ou não
+  if (points.length > 0) {
+    if (e.offsetX <= points[(points.length-1)].anchorPoint.x) {
+      points.push(new Anchor(e.offsetX, e.offsetY, true));
+      movedAngleName = 'angleRight';
+    } else {
+      points.push(new Anchor(e.offsetX, e.offsetY, false));
+      movedAngleName = 'angleRight';
     }
-
-    if (e.code == "KeyZ" && ctrlPressed == true && pointErased == false) {
-      points.pop();
-      pointErased = true;
-    }
-    draw();
-  }, false);
-  window.addEventListener('keyup', function(e) {
-    if (e.code == "ControlLeft") {
-      ctrlPressed = false;
-    }
-
-    if (e.code == "KeyZ") {
-      pointErased = false;
-    }
-    draw();
-  }, false);
-
-  ctx.canvas.addEventListener("mousedown", function(e) {
-    for (i = 0; i < points.length; i++) {
-      colidiu = points[i].colides(e.offsetX, e.offsetY);
-      if (colidiu) {
-        p = {
-          key: i,
-          value: colidiu,
-          relativeAngleLeftPoint: colidiu == 'anchorPoint' ? {
-            x: (points[i].anchorPoint.x - points[i].angleLeft.x),
-            y: (points[i].anchorPoint.y - points[i].angleLeft.y),
-          } : null,
-          relativeAngleRightPoint: colidiu == 'anchorPoint' ? {
-            x: (points[i].anchorPoint.x - points[i].angleRight.x),
-            y: (points[i].anchorPoint.y - points[i].angleRight.y),
-          } : null
-        }
-        drag = true;
-        return;
-      }
-    }
-
-    points.push(new Anchor(e.offsetX, e.offsetY))    
-    
-    console.log(points.length)
-    draw();
-  });
-
-  ctx.canvas.addEventListener("mousemove", function(e) {
-    if (drag) {
-      if (p.value == 'anchorPoint') {
-        var leftRelative = {
-          x: points[p.key].anchorPoint.x + p.relativeAngleLeftPoint.x,
-          y: points[p.key].anchorPoint.y + p.relativeAngleLeftPoint.y
-        }
-        
-        var rightRelative = {
-          x: points[p.key].anchorPoint.x + p.relativeAngleRightPoint.x,
-          y: points[p.key].anchorPoint.y + p.relativeAngleRightPoint.y
-        }
-        points[p.key].anchorPoint.movePoint(e.offsetX, e.offsetY);
-        points[p.key].angleLeft.movePoint(leftRelative.x, leftRelative.y);
-        points[p.key].angleRight.movePoint(rightRelative.x, rightRelative.y);
-      } else {
-        points[p.key][p.value].movePoint(e.offsetX, e.offsetY);
-      }
-    }
-    draw();
-  });
-
-  ctx.canvas.addEventListener("mouseup", function(e) {
-    drag = false;
-    draw();
-  });
+  } else {
+    points.push(new Anchor(e.offsetX, e.offsetY, false));
+    movedAngleName = 'angleRight';
+  }
+  dragOnCreate = true;
 }
 
 init();
