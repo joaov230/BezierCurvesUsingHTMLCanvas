@@ -10,7 +10,8 @@
 - You can click at any spot to create an Anchor Point and two angle points linked to that anchor point, if you simply hold the mouse button when creating a new Anchor Point, you will drag one angle point to where the mouse is and the other to the opposite side
 - After a anchor point is created, you can drag any anchor point and angle point to any other spot inside the canvas by holding `Ctrl` and dragging a point
 - Each 2 anchor points, a curve is created using 1º anchor point, its right angle point, the 2ª anchor point's left angle point and, finnaly, the 2º anchor point   
-- A `Ctrl+Z` command to erase the last point created (note that it doesn't undo the last change on the canvas, this yet has to be done)
+- If the canvas has 2 or more points AND you click in the first point, it will become the last point of the curve, closing the curve (only to draw, not in the array, in the array it stays in the first position)
+- A `Ctrl+Z` command to erase the last point created OR reopen de curve if it is closed (note that it doesn't undo the last change on the canvas, this yet has to be done)
   
   
 To understand the bezier curves a bit better:  
@@ -22,8 +23,6 @@ _It's like the black points are those "anchor points" of the Photoshop pen tool 
 
 #### TO DO
 1. **[FIXED]** <s>There's a problem when clicking and dragging an anchor point: the angleLeft and angleRight switch places (????)</s>
-2. Need to find a way to: when the `points.length` is bigger than 1, if the user click on the inital anchor point, close the curve  
-**[Sugestion to solve it:]**
-   - Create a new bool `closedCurve` that, when it is true, the `drawBezier` function will use the initial point as the last point, closing the curve (the 3º point will be `points[0].angleLeft` and the 4º point will be `points[0].anchorPoint`)
-   - When pressing `Ctrl+Z`, if the bool `closedCurve` is `true`, then instead of popping the last Point, just change `closedCurve` to `false` and return
+2. **[FIXED]** <s>Need to find a way to: when the `points.length` is bigger than 1, if the user click on the inital anchor point, close the curve</s>
+
 
