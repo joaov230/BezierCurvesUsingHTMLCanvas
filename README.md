@@ -24,5 +24,7 @@ _It's like the black points are those "anchor points" of the Photoshop pen tool 
 #### TO DO
 1. **[FIXED]** <s>There's a problem when clicking and dragging an anchor point: the angleLeft and angleRight switch places (????)</s>
 2. **[FIXED]** <s>Need to find a way to: when the `points.length` is bigger than 1, if the user click on the inital anchor point, close the curve</s>
+3. Create a canvas state buffer (use `Ctrl+Z` to go back in this state buffer and undo canvas modifications)
+   - Each modification in the canvas adds another state buffer state (position) and removes the last one
 
 

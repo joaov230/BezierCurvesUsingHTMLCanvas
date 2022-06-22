@@ -10,7 +10,7 @@ let p; // Information about the anchor (and it's angle points) that is moving
 let dragOnCreate = false; // signals if the mouse is dragging the angle points after creating the anchor point
 let closedCurve = false; // signals when the curve is a closed path
 
-
+let stateBufferArray = new Array(); // Array of canvas states
 
 // ------------------------ INIT ------------------------ //
 
@@ -29,12 +29,19 @@ function init() {
     }
 
     if (e.code == "KeyZ" && ctrlPressed == true && pointErased == false) {
-      if (closedCurve) {
+      // Tirar o pop e fazer os dados serem atualizados com a útlima posição do array de states
+      // e remover a última posição do array
+      if (stateBufferArray.length > 1) {
+        stateBufferArray.pop();
+        points = stateBufferArray[(stateBufferArray.length-1)].points.slice();
+        closedCurve = stateBufferArray[(stateBufferArray.length-1)].closedCurve;
+        pointErased = true;
+      } else {
+        stateBufferArray.pop();
+        points.pop();
         closedCurve = false;
-        return;
+        pointErased = true;
       }
-      points.pop();
-      pointErased = true;
     }
     draw();
   }, false);
@@ -71,7 +78,7 @@ function init() {
         }
         drag = true;
         return;
-      } else if (colidiu == 'anchorPoint' && i == 0 && points.length > 1) {
+      } else if (colidiu == 'anchorPoint' && i == 0 && points.length >= 1) {
         closedCurve = true;
         return;
       }
@@ -79,7 +86,6 @@ function init() {
 
     createNewAnchorPoint(e);
     
-    console.log(points.length)
     draw();
   });
 
@@ -110,6 +116,15 @@ function init() {
   ctx.canvas.addEventListener("mouseup", function(e) {
     drag = false;
     dragOnCreate = false;
+
+    if(stateBufferArray.length >= 200) { // Removes the first position of array
+      stateBufferArray.shift();
+    }
+    // Creates another state on the stateBufferArray
+    stateBufferArray.push(new StateBuffer(points, closedCurve));
+    console.log(stateBufferArray[(stateBufferArray.length-1)].points)
+    console.log(points)
+
     draw();
   });
 }
